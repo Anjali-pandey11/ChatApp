@@ -7,15 +7,20 @@ import userRouter from "./routes/userRoutes.js";
 import messageRouter from "./routes/messageRoutes.js";
 import {Server} from "socket.io";
 
+
 // Create express app and http server
 
 const app = express();
+app.use(cors({
+  origin: "*"
+}));
 const server = http.createServer(app)
 
 // Initialize socket.io server
 export const io = new Server(server , {
   cors: {origin:"*"}
 })
+
 
 // Store online users
 export const userSocketMap = {};  // {userId:socketId}
@@ -38,7 +43,10 @@ io.on("connection", (socket)=>{
 })
 
 // Middleware setup
-app.use(express.json({limit:"4"}));
+app.use(express.json({limit:"4mb"}));
+
+// app.use(express.json({ limit: "20mb" }));
+// app.use(express.urlencoded({ limit: "20mb", extended: true }));
 
 // Routes setup
 app.use("/api/status" ,(req,res)=>res.send("server is live"))

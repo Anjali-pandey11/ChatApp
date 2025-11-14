@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import cloudinary from "../lib/cloudinary.js";
 
 // Signup a new user 
-export const signup = async ()=>{
+export const signup = async (req, res)=>{
   const{fullName,email,password,bio} = req.body;
   
   try {
@@ -58,11 +58,13 @@ export const login = async (req,res) => {
 
 // Controller to check if user is authenticated
 export const checkAuth = (req,res)=>{
+  console.log("checkAuth")
   res.json({success:true,user:req.user});
 }
 
 // Controller to update user profile details 
 export const updateProfile = async (req, res)=>{
+   console.log("in update profile")
   try {
     const {profilePic, bio, fullName} = req.body
     const userId = req.user._id;
@@ -70,9 +72,12 @@ export const updateProfile = async (req, res)=>{
 
     if(!profilePic){
       updateUser = await User.findByIdAndUpdate(userId , {bio,fullName}, {new :true});
+      console.log(" not Update profile")
     }else{
       const upload = await cloudinary.uploader.upload(profilePic)
       updateUser = await User.findByIdAndUpdate(userId ,{profilePic:upload.secure_url,bio,fullName},{new:true});
+      console.log("update profile")
+      
     }
       res.json({success:true , user:updateUser})
 
