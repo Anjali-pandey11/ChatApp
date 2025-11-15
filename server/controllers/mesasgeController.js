@@ -1,11 +1,11 @@
 import Message from "../models/Message.js";
 import User from "../models/User.js";
 import cloudinary from "../lib/cloudinary.js"
-import { userSocketMap } from "../server.js";
+import { io, userSocketMap } from "../server.js";
 
 
 // Get all users except the logged in user
-export const getUsersForSidebar = async(req, res)=>{
+export const getUsersForSidebar = async (req, res)=>{
   try {
     const userId = req.user._id;
     const filteredUser = await User.find({_id:{$ne: userId}}).select("-password") 
@@ -36,12 +36,14 @@ export const getMessages = async (req, res)=>{
     const messages = await Message.find({
 
       $or: [
-        {senderId:myId , received: selectedUserId}, 
+        {senderId:myId , receivedId: selectedUserId}, 
         {senderId:selectedUserId,receiverId:myId}    
       ]
     })
    
-     await Message.updateMany({senderId:selectedUserId,receiverId:myId, seen:true})
+     await Message.updateMany({senderId:selectedUserId,receiverId:myId, seen:true}
+      
+     )
 
      res.json({success:true , messages})
 
@@ -87,7 +89,7 @@ export const sendMessage = async (req, res)=>{
       // Emit the new message to the receiver's socket
       const receiverSocketId = userSocketMap[receiverId];
       if(receiverSocketId){
-        io.to(receiverSocketId).emit("newMesssage",newMessage)
+        io.to(receiverSocketId).emit("newMessage",newMessage)
       }
       res.json({success:true,newMessage})
 
