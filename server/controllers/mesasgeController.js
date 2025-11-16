@@ -16,6 +16,7 @@ export const getUsersForSidebar = async (req, res)=>{
       const message = await Message.find({senderId:user._id, receivedId:userId,seen:false })
 
       if(message.length > 0){
+        
           unseenMessages[user._id] = message.length;
       }
     })
@@ -36,14 +37,13 @@ export const getMessages = async (req, res)=>{
     const messages = await Message.find({
 
       $or: [
-        {senderId:myId , receivedId: selectedUserId}, 
+        {senderId:myId , receiverId: selectedUserId}, 
         {senderId:selectedUserId,receiverId:myId}    
       ]
     })
    
      await Message.updateMany({senderId:selectedUserId,receiverId:myId, seen:true}
-      
-     )
+   )
 
      res.json({success:true , messages})
 
@@ -51,7 +51,6 @@ export const getMessages = async (req, res)=>{
       console.log(error.message)
       res.json({success:false ,message:error.message})
   }
-
 }
 
 // api to mark message as seen using message id 
