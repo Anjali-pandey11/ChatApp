@@ -1,19 +1,21 @@
 import Message from "../models/Message.js";
 import User from "../models/User.js";
 import cloudinary from "../lib/cloudinary.js"
-import { io, userSocketMap } from "../server.js";
+import { io, userSocketMap } from "../socket.js";
 
 
 // Get all users except the logged in user
 export const getUsersForSidebar = async (req, res)=>{
+  console.log("getUsersForSidebar")
   try {
+    console.log("getUserForSidebarTryBlock")
     const userId = req.user._id;
     const filteredUser = await User.find({_id:{$ne: userId}}).select("-password") 
 
     // count number of message not seen 
     const unseenMessages = {}
     const promises = filteredUser.map(async (user)=>{
-      const message = await Message.find({senderId:user._id, receivedId:userId,seen:false })
+      const message = await Message.find({senderId:user._id, receiverId:userId,seen:false })
 
       if(message.length > 0){
         
@@ -23,6 +25,7 @@ export const getUsersForSidebar = async (req, res)=>{
     await Promise.all(promises);
     res.json({success:true ,users:filteredUser,unseenMessages})
   } catch (error) {
+    console.log("getUserForSidebarCatchBlock")
     console.log(error.message)
       res.json({success:false ,message:error.message})
   }
@@ -30,10 +33,14 @@ export const getUsersForSidebar = async (req, res)=>{
 
 // Get all messages for selected user
 export const getMessages = async (req, res)=>{
+  console.log("getMessages")
   try {
+    console.log("getMessageTryBlock")
     const {id: selectedUserId} = req.params;  // jis user se chat karni hai
     const myId = req.user._id;   // jo user login hai
 
+    console.log(myId)
+    
     const messages = await Message.find({
 
       $or: [
@@ -42,7 +49,8 @@ export const getMessages = async (req, res)=>{
       ]
     })
    
-     await Message.updateMany({senderId:selectedUserId,receiverId:myId, seen:true}
+     await Message.updateMany({senderId:selectedUserId,receiverId:myId, seen:false},
+      { $set: { seen: true } } 
    )
 
      res.json({success:true , messages})
@@ -60,6 +68,7 @@ export const markMessageAsSeen = async (req, res)=>{
     await Message.findByIdAndUpdate(id,{seen:true})
     res.json({success:true});
   }catch(error){
+    console.log("getMessageCatchBlock")
     console.log(error.message)
     res.json({success:false,message:error.message})
   }

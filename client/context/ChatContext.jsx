@@ -17,7 +17,6 @@ export const ChatProvider = ({children})=>{
    // function to get all users for sidebar
    const getUsers = async ()=>{
     try {
-      
         const {data} = await axios.get("/api/messages/users")
         if(data.success){
           setUsers(data.users);
